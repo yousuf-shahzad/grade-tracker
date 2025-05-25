@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans";
+}
+
+button {
+  cursor: pointer;
+}
