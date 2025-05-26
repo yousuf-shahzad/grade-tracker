@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Paper } from '../../../types';
-import { Button } from '../../../shared/components/Button';
+import { Button } from '../../../components/ui/Button';
 import { SUBJECTS, PAPER_TYPES } from '../../../constants/paper';
-import { ChartBarIcon } from '@heroicons/react/24/outline';
+import { ChartBarIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const getSubjectLabel = (subjectId: string) => {
   const found = SUBJECTS.find(s => s.value === subjectId);
@@ -15,15 +15,11 @@ const getPaperTypeName = (typeId: string) => {
   return found ? found.label : typeId;
 };
 
-const getRetakeLabel = (paper: Paper) => {
-  if (!paper.isRetake) return null;
-  return paper.retakeNumber ? `Retake #${paper.retakeNumber}` : 'Retake';
-};
-
 interface PaperCardProps {
   paper: Paper;
   onClick: () => void;
   onRetake: (paper: Paper) => void;
+  onDelete: (paperId: string) => void;
 }
 
 const getGradeColor = (percentage: number) => {
@@ -34,13 +30,35 @@ const getGradeColor = (percentage: number) => {
   return 'text-[#E53E3E] dark:text-[#FC8181]';
 };
 
-export const PaperCard: React.FC<PaperCardProps> = ({ paper, onClick, onRetake }) => {
+const formatExamSeries = (series: string) => {
+  if (series === 'CUSTOM') return 'Custom Series';
+  
+  // Handle predefined series format (e.g., MAY_JUNE_2024)
+  const [period, year] = series.split('_');
+  if (period && year) {
+    const formattedPeriod = period.split('_')
+      .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+      .join(' ');
+    return `${formattedPeriod} ${year}`;
+  }
+  
+  return series;
+};
+
+export const PaperCard: React.FC<PaperCardProps> = ({ paper, onClick, onRetake, onDelete }) => {
   const navigate = useNavigate();
   const gradeColor = getGradeColor(paper.percentage);
 
   const handleRetake = (e: React.MouseEvent) => {
     e.stopPropagation();
     onRetake(paper);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Are you sure you want to delete this paper?')) {
+      onDelete(paper.id);
+    }
   };
 
   return (
@@ -59,7 +77,7 @@ export const PaperCard: React.FC<PaperCardProps> = ({ paper, onClick, onRetake }
             )}
           </h3>
           <p className="text-sm text-[#718096] dark:text-[#A0AEC0]">
-            {getSubjectLabel(paper.subjectId)} • {paper.session}
+            {getSubjectLabel(paper.subjectId)} • {formatExamSeries(paper.session)}
           </p>
         </div>
         <div className="flex items-center">
@@ -117,6 +135,14 @@ export const PaperCard: React.FC<PaperCardProps> = ({ paper, onClick, onRetake }
           }}
         >
           Edit
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={handleDelete}
+          className="flex items-center text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+        >
+          <TrashIcon className="h-4 w-4 mr-1" />
+          Delete
         </Button>
       </div>
     </div>

@@ -8,6 +8,7 @@ import { EditPaper } from '../features/papers/components/EditPaper';
 import { SubjectStats } from '../features/subjects/components/SubjectStats';
 import { Statistics } from '../features/statistics/components/Statistics';
 import { Dashboard } from '../features/dashboard/components/Dashboard';
+import { Settings } from '../features/settings/components/Settings';
 
 // Protected Route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -101,6 +102,17 @@ export const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <MainLayout>
               <SubjectStats />
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Settings />
             </MainLayout>
           </ProtectedRoute>
         }

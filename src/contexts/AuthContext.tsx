@@ -5,8 +5,12 @@ import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   signInWithPopup,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  type User,
+  type UserCredential
 } from 'firebase/auth';
-import type { User, UserCredential } from 'firebase/auth';
 import { auth, googleProvider } from '../config/firebase';
 
 interface AuthContextType {
@@ -15,7 +19,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<UserCredential>;
   signUp: (email: string, password: string) => Promise<UserCredential>;
   signInWithGoogle: () => Promise<UserCredential>;
-  signOut: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,31 +37,59 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Handle redirect result
+    getRedirectResult(auth).then((result) => {
+      if (result) {
+        // User successfully signed in with Google
+        setUser(result.user);
+      }
+    }).catch((error) => {
+      console.error('Redirect sign-in error:', error);
+    });
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
-  const signIn = (email: string, password: string) => 
-    signInWithEmailAndPassword(auth, email, password);
-
-  const signUp = (email: string, password: string) => 
-    createUserWithEmailAndPassword(auth, email, password);
-
-  const signInWithGoogle = async () => {
+  const signIn = async (email: string, password: string) => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      return result;
+      return await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      console.error('Error signing in with Google:', error);
+      console.error('Sign in error:', error);
       throw error;
     }
   };
 
-  const signOut = () => firebaseSignOut(auth);
+  const signUp = async (email: string, password: string) => {
+    try {
+      return await createUserWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error('Sign up error:', error);
+      throw error;
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      return await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await firebaseSignOut(auth);
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+  };
 
   const value = {
     user,
@@ -65,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signInWithGoogle,
-    signOut
+    logout
   };
 
   return (

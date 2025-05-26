@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePapers } from '../../../hooks/usePapers';
-import { Button } from '../../../shared/components/Button';
+import { Button } from '../../../components/ui/Button';
 import { SUBJECTS, PAPER_TYPES } from '../../../constants/paper';
 import type { Paper, TopicScore } from '../../../types';
 
@@ -37,6 +37,8 @@ export const EditPaper: React.FC = () => {
     try {
       const paperToUpdate = {
         paperName: paper.paperName,
+        title: paper.title,
+        date: paper.date,
         subjectId: paper.subjectId,
         paperType: paper.paperType,
         session: paper.session,
@@ -45,10 +47,14 @@ export const EditPaper: React.FC = () => {
         topicScores: paper.topicScores,
         notes: paper.notes,
         percentage: paper.percentage,
-        ...(paper.isRetake && {
-          isRetake: true,
-          retakeNumber: paper.retakeNumber,
-        }),
+        isRetake: paper.isRetake,
+        retakeOf: paper.retakeOf,
+        retakeNumber: paper.retakeNumber,
+        originalPaperId: paper.originalPaperId,
+        timeTaken: paper.timeTaken,
+        attemptNumber: paper.attemptNumber,
+        mathsPaperType: paper.mathsPaperType,
+        furtherMathsPaperType: paper.furtherMathsPaperType
       };
       await updatePaper(id, paperToUpdate);
       navigate('/papers');
@@ -166,7 +172,9 @@ export const EditPaper: React.FC = () => {
               required
             >
               {PAPER_TYPES.map(type => (
-                <option key={type.value} value={type.value}>{type.label}</option>
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
               ))}
             </select>
           </div>
@@ -185,7 +193,9 @@ export const EditPaper: React.FC = () => {
               required
             >
               {SESSIONS.map(session => (
-                <option key={session} value={session}>{session}</option>
+                <option key={session} value={session}>
+                  {session}
+                </option>
               ))}
             </select>
           </div>
@@ -219,7 +229,7 @@ export const EditPaper: React.FC = () => {
               name="totalMarks"
               value={paper.totalMarks}
               onChange={handleChange}
-              min="1"
+              min="0"
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                        focus:ring-2 focus:ring-[#9F7AEA] dark:focus:ring-[#B794F4] 
                        bg-white dark:bg-[#2D3748] text-[#2D3748] dark:text-[#F7FAFC]"
@@ -244,7 +254,7 @@ export const EditPaper: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Topic Scores</h3>
+          <h3 className="text-lg font-medium text-[#2D3748] dark:text-[#F7FAFC]">Topic Scores</h3>
           {paper.topicScores.map((topic, index) => (
             <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="grid grid-cols-2 gap-4">
@@ -305,7 +315,7 @@ export const EditPaper: React.FC = () => {
                     type="number"
                     value={topic.marksAvailable}
                     onChange={(e) => handleTopicChange(index, 'marksAvailable', parseInt(e.target.value))}
-                    min="1"
+                    min="0"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                              focus:ring-2 focus:ring-[#9F7AEA] dark:focus:ring-[#B794F4] 
                              bg-white dark:bg-[#2D3748] text-[#2D3748] dark:text-[#F7FAFC]"
@@ -327,6 +337,7 @@ export const EditPaper: React.FC = () => {
           </Button>
           <Button
             type="submit"
+            variant="primary"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Saving...' : 'Save Changes'}

@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-export const AuthForm: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
+interface AuthFormProps {
+  mode: 'signin' | 'signup';
+  onToggleMode: () => void;
+}
+
+export const AuthForm: React.FC<AuthFormProps> = ({ mode, onToggleMode }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,7 +19,7 @@ export const AuthForm: React.FC = () => {
     setError('');
 
     try {
-      if (isLogin) {
+      if (mode === 'signin') {
         await signIn(email, password);
       } else {
         await signUp(email, password);
@@ -40,7 +44,7 @@ export const AuthForm: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            {mode === 'signin' ? 'Sign in to your account' : 'Create a new account'}
           </h2>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -88,7 +92,7 @@ export const AuthForm: React.FC = () => {
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              {isLogin ? 'Sign in' : 'Sign up'}
+              {mode === 'signin' ? 'Sign in' : 'Sign up'}
             </button>
           </div>
 
@@ -113,10 +117,10 @@ export const AuthForm: React.FC = () => {
           <div className="text-center">
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={onToggleMode}
               className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500"
             >
-              {isLogin
+              {mode === 'signin'
                 ? "Don't have an account? Sign up"
                 : 'Already have an account? Sign in'}
             </button>

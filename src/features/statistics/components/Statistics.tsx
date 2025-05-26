@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { usePapers } from '../../../hooks/usePapers';
 import { SUBJECTS, PAPER_TYPES } from '../../../constants/paper';
+import { PaperCalendar } from '../../papers/components/PaperCalendar';
+import type { PaperType } from '../../../types/paper';
 
 export const Statistics: React.FC = () => {
   const { papers } = usePapers();
@@ -17,8 +19,12 @@ export const Statistics: React.FC = () => {
       averageScore: papers.length > 0
         ? Math.round(papers.reduce((sum, paper) => sum + paper.percentage, 0) / papers.length)
         : 0,
-      highestScore: Math.max(...papers.map(paper => paper.percentage)),
-      lowestScore: Math.min(...papers.map(paper => paper.percentage)),
+      highestScore: papers.length > 0
+        ? Math.max(...papers.map(paper => paper.percentage))
+        : 0,
+      lowestScore: papers.length > 0
+        ? Math.min(...papers.map(paper => paper.percentage))
+        : 0,
       totalRetakes: papers.filter(paper => paper.isRetake).length,
     };
 
@@ -62,7 +68,7 @@ export const Statistics: React.FC = () => {
 
     // Calculate paper type distribution
     const paperTypeDistribution = PAPER_TYPES.map(type => {
-      const typePapers = papers.filter(paper => paper.paperType === type.value);
+      const typePapers = papers.filter(paper => paper.paperType === type.value.toUpperCase() as PaperType);
       return {
         type: type.label,
         count: typePapers.length,
@@ -81,32 +87,36 @@ export const Statistics: React.FC = () => {
   }, [papers]);
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold text-[#2D3748] dark:text-[#F7FAFC] mb-6">Overall Statistics</h1>
+    <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <h1 className="text-2xl font-semibold text-[#2D3748] dark:text-[#F7FAFC] mb-6">Statistics</h1>
 
       {/* Overall Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="p-6 bg-white dark:bg-[#2D3748] rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Overall Performance</h3>
-          <div className="text-3xl font-bold text-[#9F7AEA] dark:text-[#B794F4]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white dark:bg-[#2D3748] rounded-lg shadow-md p-6">
+          <h2 className="text-lg font-medium text-[#2D3748] dark:text-[#F7FAFC] mb-4">
+            Overall Average
+          </h2>
+          <p className="text-3xl font-bold text-[#9F7AEA] dark:text-[#B794F4]">
             {stats.overallStats.averageScore}%
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            {stats.overallStats.totalPapers} papers completed
-          </div>
+          </p>
+          <p className="text-sm text-[#718096] dark:text-[#A0AEC0] mt-2">
+            Based on {stats.overallStats.totalPapers} papers
+          </p>
         </div>
 
-        <div className="p-6 bg-white dark:bg-[#2D3748] rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Score Range</h3>
+        <div className="bg-white dark:bg-[#2D3748] rounded-lg shadow-md p-6">
+          <h2 className="text-lg font-medium text-[#2D3748] dark:text-[#F7FAFC] mb-4">
+            Score Range
+          </h2>
           <div className="flex justify-between items-center">
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Highest</div>
+              <div className="text-sm text-[#718096] dark:text-[#A0AEC0]">Highest</div>
               <div className="text-xl font-semibold text-green-600 dark:text-green-400">
                 {stats.overallStats.highestScore}%
               </div>
             </div>
             <div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">Lowest</div>
+              <div className="text-sm text-[#718096] dark:text-[#A0AEC0]">Lowest</div>
               <div className="text-xl font-semibold text-red-600 dark:text-red-400">
                 {stats.overallStats.lowestScore}%
               </div>
@@ -114,19 +124,21 @@ export const Statistics: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-6 bg-white dark:bg-[#2D3748] rounded-lg shadow">
-          <h3 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">Retakes</h3>
-          <div className="text-3xl font-bold text-[#9F7AEA] dark:text-[#B794F4]">
+        <div className="bg-white dark:bg-[#2D3748] rounded-lg shadow-md p-6">
+          <h2 className="text-lg font-medium text-[#2D3748] dark:text-[#F7FAFC] mb-4">
+            Retakes
+          </h2>
+          <p className="text-3xl font-bold text-[#9F7AEA] dark:text-[#B794F4]">
             {stats.overallStats.totalRetakes}
-          </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+          </p>
+          <p className="text-sm text-[#718096] dark:text-[#A0AEC0] mt-2">
             Total retake attempts
-          </div>
+          </p>
         </div>
       </div>
 
       {/* Monthly Trends */}
-      <div className="mb-8">
+      <div>
         <h2 className="text-xl font-semibold text-[#2D3748] dark:text-[#F7FAFC] mb-4">Monthly Performance</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Object.entries(stats.monthlyTrends).map(([month, data]) => (
@@ -146,7 +158,7 @@ export const Statistics: React.FC = () => {
       </div>
 
       {/* Subject Trends */}
-      <div className="mb-8">
+      <div>
         <h2 className="text-xl font-semibold text-[#2D3748] dark:text-[#F7FAFC] mb-4">Subject Performance</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {stats.subjectTrends.map(({ subject, trend, average }) => (
@@ -190,6 +202,14 @@ export const Statistics: React.FC = () => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Paper Calendar */}
+      <div>
+        <h2 className="text-xl font-semibold text-[#2D3748] dark:text-[#F7FAFC] mb-4">
+          Paper Completion Calendar
+        </h2>
+        <PaperCalendar />
       </div>
     </div>
   );

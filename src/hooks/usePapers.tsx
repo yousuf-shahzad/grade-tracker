@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, orderBy, getDocs, addDoc, Timestamp, deleteDoc, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, addDoc, Timestamp, deleteDoc, doc, updateDoc, serverTimestamp, type FieldValue } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import type { Paper } from '../types';
@@ -54,6 +54,8 @@ export const usePapers = () => {
         userId: user.uid,
         subjectId: originalPaper.subjectId,
         paperName: originalPaper.paperName,
+        title: originalPaper.title,
+        date: originalPaper.date,
         session: originalPaper.session,
         totalMarks: originalPaper.totalMarks,
         achievedMarks: 0, // Will be updated when the retake is completed
@@ -66,7 +68,7 @@ export const usePapers = () => {
         })),
         paperType: originalPaper.paperType,
         isRetake: true,
-        originalPaperId: originalPaper.id,
+        retakeOf: originalPaper.id,
         retakeNumber: (originalPaper.retakeNumber || 0) + 1
       };
 
@@ -100,14 +102,23 @@ export const usePapers = () => {
   const updatePaper = async (paperId: string, updatedPaper: Omit<Paper, 'id' | 'userId' | 'createdAt' | 'completedDate'>) => {
     try {
       const paperRef = doc(db, 'papers', paperId);
-      const updateData = {
+      
+      // Create a clean update object without undefined values
+      const updateData: Record<string, any> = {
         ...updatedPaper,
         updatedAt: serverTimestamp(),
       };
 
-      // Only include retake fields if they exist
+      // Remove any undefined values
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key];
+        }
+      });
+
+      // Handle retake fields
       if (!updateData.isRetake) {
-        delete updateData.isRetake;
+        delete updateData.retakeOf;
         delete updateData.retakeNumber;
       }
 

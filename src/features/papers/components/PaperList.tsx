@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { usePapers } from '../../../hooks/usePapers';
 import { useNavigate } from 'react-router-dom';
 import type { Paper } from '../../../types';
-import { Button } from '../../../shared/components/Button';
+import { Button } from '../../../components/ui/Button';
 import { SUBJECTS, PAPER_TYPES } from '../../../constants/paper';
 import { PaperCard } from './PaperCard';
 import { PaperUploadForm } from './PaperUploadForm';
@@ -142,6 +142,7 @@ export const PaperList: React.FC = () => {
               paper={paper}
               onClick={() => setSelectedPaper(paper)}
               onRetake={handleRetake}
+              onDelete={handleDelete}
             />
           ))}
         </div>
@@ -170,7 +171,7 @@ export const PaperList: React.FC = () => {
             setRetakePaper(null);
           }}
           onSuccess={handleUploadSuccess}
-          retakePaper={retakePaper}
+          retakePaper={retakePaper || undefined}
         />
       )}
     </div>
